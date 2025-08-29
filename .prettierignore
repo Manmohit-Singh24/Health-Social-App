@@ -1,0 +1,24 @@
+# Ignore files in public folder
+public/*
+
+# Ignore node modules
+node_modules/*
+
+# Ignore env files
+.env
+.env.*
+
+# Ignore lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Ignore documentation
+*.md
+
+# Ignore build files
+dist/*
+build/*
+
+# ignore coverage
+coverage/*
