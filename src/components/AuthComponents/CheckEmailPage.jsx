@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { Button } from "../ui/";
 
 const CheckEmailPage = () => {
-    const email = useSelector((state) => state.AuthData.Email) || "--you@gmail.com--";
+    const email = useSelector((state) => state.AuthData.email) || "--you@gmail.com--";
 
     return (
         <div className="flex flex-col items-center mt-5 gap-5">

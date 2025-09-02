@@ -15,6 +15,10 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import authService from "../../services/authService";
+import { VscLoading } from "react-icons/vsc";
+import { useDispatch, useSelector } from "react-redux";
+import { setAuthData } from "../../store/Features/authSlice";
+import { toast } from "sonner";
 
 const emailCheckeSchema = z.object({
     email: z.string().email("Invalid email"),
@@ -22,12 +26,14 @@ const emailCheckeSchema = z.object({
 
 const registerSchema = emailCheckeSchema.extend({
     username: z.string().min(2, { message: "Username must be at least 2 characters." }),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     fullname: z.string().min(2, { message: "Name must be at least 2 characters." }),
 });
 
 const RegisterForm = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
     const [showPassword, setShowPassword] = useState(false);
     const [formPhase, setFormPhase] = useState(1);
     /*
@@ -46,25 +52,60 @@ const RegisterForm = () => {
         },
         reValidateMode: formPhase === 1 ? "onChange" : formPhase === 2 ? "onSubmit" : "onChange",
     });
+    const [isLoading, setIsLoading] = useState(false);
+    const [backendError, setBackendError] = useState("");
 
-    const onSubmit = (data) => {
-        console.log(data);
-        console.log(form.formState.isSubmitted);
+    const onSubmit = async (formData) => {
+        setIsLoading(true);
 
         if (formPhase === 1) {
             // check for availability.
-            const checkedEmailAvailablitiy = true; // API call
+            const resCheckEmail = await authService.checkEmailAvailablity(formData);
 
-            if (!checkedEmailAvailablitiy) navigate("/auth/login");
-            else {
-                setFormPhase(2);
+            if (resCheckEmail.success) {
+                toast.message("Please Login", {
+                    description: `User with email : ${formData.email} , already exists.`,
+                });
+                navigate("/auth/login");
+                dispatch(setAuthData(formData));
+            } else {
                 // make the password , username , name field visible
+                setFormPhase(2);
+                setIsLoading(false);
             }
         } else {
+            // register
+            const resRegister = await authService.register(formData);
+
+            if (resRegister.success) {
+                const resLogin = await authService.login(formData);
+                if (resLogin.success) {
+                    const resVerifyEmail = await authService.sendVerificationLink();
+
+                    if (resVerifyEmail.success) {
+                        toast.message("Plase Verify your email", {
+                            description: `Verification link sent to ${formData.email}.`,
+                        });
+                    }
+                    dispatch(setAuthData(formData));
+
+                    navigate("/");
+                } else {
+                    setBackendError(resLogin.message);
+                    setIsLoading(false);
+                }
+            } else {
+                if (
+                    resRegister.message ===
+                    "A user with the same id, email, or phone already exists in this project."
+                )
+                    setBackendError("User with this email already exists.");
+                else setBackendError(resRegister.message);
+
+                setIsLoading(false);
+            }
         }
     };
-
-    
 
     useEffect(() => {
         if (formPhase === 2 && Object.keys(form.formState.errors).length > 0) {
@@ -85,9 +126,14 @@ const RegisterForm = () => {
                     name="email"
                     render={({ field }) => (
                         <FormItem className="grid-rows-[1.2rem_2.2rem_1.2rem] mb-1 w-full items-start gap-1">
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel className="text-foreground">Email</FormLabel>
                             <FormControl>
-                                <Input type="text" placeholder="you@example.com" {...field} />
+                                <Input
+                                    type="text"
+                                    className="text-foreground"
+                                    placeholder="you@example.com"
+                                    {...field}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -103,9 +149,14 @@ const RegisterForm = () => {
                             name="username"
                             render={({ field }) => (
                                 <FormItem className="grid-rows-[1.2rem_2.2rem_1.2rem] mb-1 w-full items-start gap-1">
-                                    <FormLabel>Username</FormLabel>
+                                    <FormLabel className="text-foreground">Username</FormLabel>
                                     <FormControl>
-                                        <Input type="text" placeholder="you_123" {...field} />
+                                        <Input
+                                            type="text"
+                                            className="text-foreground"
+                                            placeholder="you_123"
+                                            {...field}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -117,9 +168,14 @@ const RegisterForm = () => {
                             name="fullname"
                             render={({ field }) => (
                                 <FormItem className="grid-rows-[1.2rem_2.2rem_1.2rem] mb-1 w-full items-start gap-1">
-                                    <FormLabel>Full Name</FormLabel>
+                                    <FormLabel className="text-foreground">Full Name</FormLabel>
                                     <FormControl>
-                                        <Input type="text" placeholder="Your Name" {...field} />
+                                        <Input
+                                            type="text"
+                                            className="text-foreground"
+                                            placeholder="Your Name"
+                                            {...field}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -131,12 +187,13 @@ const RegisterForm = () => {
                             name="password"
                             render={({ field }) => (
                                 <FormItem className="grid-rows-[1.2rem_2.2rem_1.2rem] mb-1 w-full items-start gap-1">
-                                    <FormLabel>New Password</FormLabel>
+                                    <FormLabel className="text-foreground">New Password</FormLabel>
                                     <FormControl>
                                         <div className="relative w-full">
                                             <Input
                                                 type={showPassword ? "text" : "password"}
                                                 placeholder="......"
+                                                className="text-foreground"
                                                 {...field}
                                             />
                                             <Button
@@ -161,10 +218,26 @@ const RegisterForm = () => {
                     </>
                 )}
 
-                <Button type="submit" className="w-full mt-2">
-                    Login
+                <Button
+                    type="submit"
+                    variant={isLoading ? "disabled" : "default"}
+                    className="w-full mt-2 bg-accent-foreground text-accent"
+                >
+                    {isLoading ? (
+                        <>
+                            <VscLoading className="animate-spin" />
+                            Please wait
+                        </>
+                    ) : formPhase === 1 ? (
+                        "Continue with Email"
+                    ) : (
+                        "Register"
+                    )}
                 </Button>
 
+                {backendError && (
+                    <p className="text-center text-sm text-red-500 mt-4">{backendError}</p>
+                )}
                 {/* Sign up link */}
                 <p className="text-center text-sm text-gray-500 mt-4">
                     Already have an account?{" "}

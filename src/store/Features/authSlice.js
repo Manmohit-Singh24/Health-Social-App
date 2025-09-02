@@ -3,15 +3,16 @@ import { createSlice } from "@reduxjs/toolkit";
 const AuthSlice = createSlice({
     name: "AuthData",
     initialState: {
-        Name: undefined,
-        Email: undefined,
-        ProfilePic: undefined,
+        username: undefined,
+        email: undefined,
+        name : undefined,
+        profilePic: undefined,
+        isLogedIn: false,
     },
     reducers: {
         setAuthData: (state, action) => {
-            state.Name = action.payload.Name;
-            state.Email = action.payload.Email;
-            state.ProfilePic = action.payload.ProfilePic;
+            let data = action.payload;
+            for (let key in data) state[key] = data[key];
         },
     },
 });

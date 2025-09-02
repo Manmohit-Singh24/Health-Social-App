@@ -1,0 +1,64 @@
+{
+    "projectId": "68b5e29b0003889dba17",
+    "endpoint": "https://fra.cloud.appwrite.io/v1",
+    "projectName": "Health-Social-App",
+    "settings": {
+        "services": {
+            "account": true,
+            "avatars": true,
+            "databases": true,
+            "locale": true,
+            "health": true,
+            "storage": true,
+            "teams": true,
+            "users": true,
+            "sites": true,
+            "functions": true,
+            "graphql": true,
+            "messaging": true
+        },
+        "auth": {
+            "methods": {
+                "jwt": true,
+                "phone": true,
+                "invites": false,
+                "anonymous": false,
+                "email-otp": false,
+                "magic-url": true,
+                "email-password": true
+            },
+            "security": {
+                "duration": 31536000,
+                "limit": 0,
+                "sessionsLimit": 10,
+                "passwordHistory": 5,
+                "passwordDictionary": false,
+                "personalDataCheck": false,
+                "sessionAlerts": true,
+                "mockNumbers": []
+            }
+        }
+    },
+    "functions": [
+        {
+            "$id": "68b6cc08000bd310c82e",
+            "execute": [
+                "any"
+            ],
+            "name": "CheckEmail",
+            "enabled": true,
+            "logging": true,
+            "runtime": "node-22",
+            "scopes": [
+                "users.read"
+            ],
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "specification": "s-0.5vcpu-512mb",
+            "path": "functions/CheckEmail"
+        }
+    ]
+}

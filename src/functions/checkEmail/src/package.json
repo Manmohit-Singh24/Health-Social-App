@@ -1,7 +1,0 @@
-{
-    "name": "check-email",
-    "type": "module",
-    "dependencies": {
-        "node-appwrite": "^18.0.0"
-    }
-}

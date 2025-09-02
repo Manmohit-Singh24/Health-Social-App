@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -14,24 +14,50 @@ import {
 } from "../ui/";
 import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-
+import authService from "../../services/authService";
+import { useNavigate } from "react-router-dom";
 const formSchema = z.object({
-  email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
 });
+import { useSelector, useDispatch } from "react-redux";
+import { setAuthData } from "../../store/Features/authSlice";
+import { VscLoading } from "react-icons/vsc";
 
 const LoginForm = () => {
+    const isLogedIn = useSelector((state) => state.AuthData.isLogedIn);
+    const email = useSelector((state) => state.AuthData.email) || "";
+    useEffect(() => {
+        if (isLogedIn) {
+            navigate("/");
+        }
+    }, [isLogedIn]);
+
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            email: "",
+            email: email,
             password: "",
         },
     });
     const [showPassword, setShowPassword] = useState(false);
+    const [backendError, setBackendError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
-    const onSubmit = (data) => {
-        console.log(data);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const onSubmit = async (formData) => {
+        setIsLoading(true);
+        const resLogin = await authService.login(formData);
+
+        if (resLogin.success) {
+            navigate("/");
+            dispatch(setAuthData({ ...formData, isLogedIn: true }));
+        } else {
+            setBackendError(resLogin.message);
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -47,9 +73,13 @@ const LoginForm = () => {
                     name="email"
                     render={({ field }) => (
                         <FormItem className="grid-rows-[1.2rem_2.2rem_1.2rem] mb-1 w-full items-start gap-1">
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel className="text-foreground">Email</FormLabel>
                             <FormControl>
-                                <Input placeholder="you@example.com" {...field} />
+                                <Input
+                                    placeholder="you@example.com"
+                                    className="text-foreground"
+                                    {...field}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -63,7 +93,7 @@ const LoginForm = () => {
                     render={({ field }) => (
                         <FormItem className="grid-rows-[1.2rem_2.2rem_1.2rem] mb-1 w-full items-start gap-1">
                             <div className="flex justify-between">
-                                <FormLabel>Password</FormLabel>
+                                <FormLabel className="text-foreground">Password</FormLabel>
                                 <Link
                                     to="/auth/forgot-password"
                                     className="text-blue-600 hover:underline text-sm"
@@ -74,6 +104,7 @@ const LoginForm = () => {
                             <div className="relative w-full">
                                 <Input
                                     type={showPassword ? "text" : "password"}
+                                    className="text-foreground"
                                     placeholder="......"
                                     {...field}
                                 />
@@ -97,9 +128,20 @@ const LoginForm = () => {
                 />
 
                 <Button type="submit" className="w-full mt-2">
-                    Login
+                    {isLoading ? (
+                        <>
+                            <VscLoading className="animate-spin" />
+                            Please wait
+                        </>
+                    ) : (
+                        "Login"
+                    )}
                 </Button>
 
+                {backendError && (
+                    <p className="text-center text-sm text-red-500 mt-4">{backendError}</p>
+                )}
+                
                 {/* Sign up link */}
                 <p className="text-center text-sm text-gray-500 mt-4">
                     Don't have an account?{" "}

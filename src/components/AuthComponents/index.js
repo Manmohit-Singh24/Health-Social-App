@@ -3,11 +3,14 @@ import RegisterForm from "./RegisterForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
 import CheckEmailPage from "./CheckEmailPage";
 import ResetPasswordForm from "./ResetPasswordForm";
-
+import GoogleLoginButton from "./GoogleLoginButton";
+import VerifyEmailPage from "./VerifyEmailPage";
 export {
     LoginForm,
     RegisterForm,
     ForgotPasswordForm,
     CheckEmailPage,
-    ResetPasswordForm
+    ResetPasswordForm,
+    GoogleLoginButton,
+    VerifyEmailPage
 };

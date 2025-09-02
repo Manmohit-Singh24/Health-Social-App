@@ -13,14 +13,20 @@ import {
 } from "../ui/";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-
+import authService from "../../services/authService";
+import { useState } from "react";
+import { VscLoading } from "react-icons/vsc";
+import { useDispatch } from "react-redux";
+ import { setAuthData } from "../../store/Features/authSlice";
 const formSchema = z.object({
     email: z.string().email("Invalid email address"),
 });
 
 const ForgotPasswordForm = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
+    const [isLoading, setIsLoading] = useState(false);
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -28,9 +34,16 @@ const ForgotPasswordForm = () => {
         },
     });
 
-    const onSubmit = (data) => {
-        console.log(data);
-        navigate("/auth/check-email");
+    const onSubmit = async (formData) => {
+        setIsLoading(true);
+        const res = await authService.requestResetPassword(formData);
+
+        if (res.success) {
+            dispatch(setAuthData(formData));
+            navigate("/auth/check-email");
+        } else {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -46,16 +59,27 @@ const ForgotPasswordForm = () => {
                     name="email"
                     render={({ field }) => (
                         <FormItem className="grid-rows-[1.2rem_2.2rem_1.2rem] mb-1 w-full items-start gap-1">
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel className="text-foreground">Email</FormLabel>
                             <FormControl>
-                                <Input placeholder="you@example.com" {...field} />
+                                <Input
+                                    className="text-foreground"
+                                    placeholder="you@example.com"
+                                    {...field}
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
                 <Button type="submit" className="w-full mt-2">
-                    Reset Password
+                    {isLoading ? (
+                        <>
+                            <VscLoading className="animate-spin" />
+                            Please wait
+                        </>
+                    ) : (
+                        "Reset Password"
+                    )}
                 </Button>
                 <Link to="/auth/login" className=" mt-4 text-blue-600 hover:underline">
                     Cancel

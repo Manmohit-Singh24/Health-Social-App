@@ -9,8 +9,8 @@ const GoogleLoginButton = () => {
 
     return (
         <Button
-            variant="outline"
-            className="w-full flex items-center gap-3 justify-center text-base py-4.5"
+            variant="secondary"
+            className="w-full flex items-center gap-3 justify-center text-base  py-4.5"
             onClick={handleGoogleSignIn}
         >
             <FcGoogle className="shrink-0 size-6" />

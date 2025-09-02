@@ -1,16 +1,27 @@
 import { useEffect, useState } from "react";
-import { data, Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
     LoginForm,
     RegisterForm,
     ForgotPasswordForm,
     CheckEmailPage,
     ResetPasswordForm,
+    GoogleLoginButton,
+    VerifyEmailPage,
 } from "../components/AuthComponents";
-import GoogleLoginButton from "../components/AuthComponents/GoogleLoginButton";
+import { useSelector } from "react-redux";
+
 const AuthPage = () => {
     const { authType } = useParams();
     const navigate = useNavigate();
+
+    const isLoggedIn = useSelector((state) => state.AuthData.isLogedIn);
+
+    useEffect(() => {
+        if (isLoggedIn && authType !== "verify-email") {
+            navigate("/");
+        }
+    }, [isLoggedIn]);
 
     let formComponent = <></>;
     let heading = "Oops! Wrong Route";
@@ -32,6 +43,9 @@ const AuthPage = () => {
     } else if (authType === "reset-password") {
         formComponent = <ResetPasswordForm />;
         heading = "Reset your password";
+    } else if (authType === "verify-email") {
+        formComponent = <VerifyEmailPage />;
+        heading = "Verify your email";
     } else {
         isValidAuthType = false;
     }
@@ -42,21 +56,27 @@ const AuthPage = () => {
         }
     }, [authType]);
 
+    console.log(authType);
+
     return (
         <div id="AuthPageContainer" className="min-h-screen flex items-center justify-center">
-            <div id="AuthPageFormContainer" className="w-fit flex flex-col items-center gap-4">
+            <div
+                id="AuthPageFormContainer"
+                className="w-fit flex flex-col items-center gap-4  h-120"
+            >
                 {/* Title */}
-                <h1 className="text-4xl font-bold text-center border-b-2 pb-2">{heading}</h1>
+                <h1 className="text-4xl font-bold text-center border-b-2 pb-2 text-foreground">
+                    {heading}
+                </h1>
 
-                <div className="w-sm flex flex-col items-center gap-4">
+                <div className="w-sm flex flex-col items-center gap-4 ">
                     {/* Google Sign-in */}
-                    {authType === "login" ||
-                        (authType === "register" && (
-                            <>
-                                <GoogleLoginButton />
-                                <p className="text-center text-gray-500">or</p>
-                            </>
-                        ))}
+                    {(authType === "login" || authType === "register") && (
+                        <>
+                            <GoogleLoginButton />
+                            <p className="text-center text-gray-500">or</p>
+                        </>
+                    )}
                     {formComponent}
                 </div>
             </div>

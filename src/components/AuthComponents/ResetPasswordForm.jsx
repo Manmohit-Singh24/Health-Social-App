@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import z from "zod";
+import z, { set } from "zod";
 import {
     Form,
     FormControl,
@@ -13,6 +13,10 @@ import {
     Button,
 } from "../ui/";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useSearchParams } from "react-router";
+import authService from "../../services/authService";
+import { VscLoading } from "react-icons/vsc";
+import { useNavigate } from "react-router-dom";
 
 const formSchema = z
     .object({
@@ -33,8 +37,24 @@ const ResetPasswordForm = () => {
     });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const onSubmit = (data) => {
-        console.log(data);
+    const [backendError, setBackendError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const userId = searchParams.get("userId");
+    const secret = searchParams.get("secret");
+
+    const onSubmit = async (data) => {
+        setIsLoading(true);
+        const res = await authService.resetPassword({ userId, secret, newPassword: data.password });
+        if (res.success) {
+            setSearchParams({});
+            navigate("/auth/login");
+        } else {
+            setBackendError(res.message);
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -111,10 +131,20 @@ const ResetPasswordForm = () => {
                         </FormItem>
                     )}
                 />
-
                 <Button type="submit" className="w-full mt-2">
-                    Reset Password
+                    {isLoading ? (
+                        <>
+                            <VscLoading className="animate-spin" />
+                            Please Wait
+                        </>
+                    ) : (
+                        "Reset Password"
+                    )}
                 </Button>
+
+                {backendError && (
+                    <p className="text-center text-sm text-red-500 mt-4">{backendError}</p>
+                )}
             </form>
         </Form>
     );
