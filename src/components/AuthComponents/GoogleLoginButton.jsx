@@ -1,10 +1,10 @@
 import { Button } from "../ui";
 import { FcGoogle } from "react-icons/fc"; // Google icon from Lucide (or React-Icons)
-
+import authService from "../../services/authService";
 const GoogleLoginButton = () => {
 
     const handleGoogleSignIn = async() => {
-        console.log("Google Sign-in");
+        authService.googleLogin();
     };
 
     return (
@@ -17,6 +17,6 @@ const GoogleLoginButton = () => {
             Sign In with Google
         </Button>
     );
-};
+}; 
 
 export default GoogleLoginButton;

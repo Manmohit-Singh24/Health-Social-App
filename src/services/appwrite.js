@@ -1,4 +1,4 @@
-import { Client, Account  , Databases , Storage, Functions} from "appwrite";
+import { Client, Account, Databases, Storage, Functions } from "appwrite";
 
 export const conf = {
     appwriteURL: String(import.meta.env.VITE_APPWRITE_ENDPOINT),
@@ -10,6 +10,8 @@ export const conf = {
 
 export { ID } from "appwrite";
 
+export { OAuthProvider } from "appwrite";
+
 export const client = new Client();
 client.setEndpoint(conf.appwriteURL).setProject(conf.projectID);
 
@@ -19,4 +21,4 @@ export const databases = new Databases(client);
 
 export const bucket = new Storage(client);
 
-export const functions  = new Functions(client);
+export const functions = new Functions(client);

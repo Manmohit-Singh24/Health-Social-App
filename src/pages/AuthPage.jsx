@@ -8,6 +8,7 @@ import {
     ResetPasswordForm,
     GoogleLoginButton,
     VerifyEmailPage,
+    OAuth,
 } from "../components/AuthComponents";
 import { useSelector } from "react-redux";
 
@@ -46,6 +47,9 @@ const AuthPage = () => {
     } else if (authType === "verify-email") {
         formComponent = <VerifyEmailPage />;
         heading = "Verify your email";
+    } else if (authType === "oauth") {
+        formComponent = <OAuth />;
+        heading = "OAuth";
     } else {
         isValidAuthType = false;
     }
@@ -55,8 +59,6 @@ const AuthPage = () => {
             navigate("/auth/login");
         }
     }, [authType]);
-
-    console.log(authType);
 
     return (
         <div id="AuthPageContainer" className="min-h-screen flex items-center justify-center">
@@ -74,7 +76,7 @@ const AuthPage = () => {
                     {(authType === "login" || authType === "register") && (
                         <>
                             <GoogleLoginButton />
-                            <p className="text-center text-gray-500">or</p>
+                            <p className="text-center text-muted-foreground">or</p>
                         </>
                     )}
                     {formComponent}

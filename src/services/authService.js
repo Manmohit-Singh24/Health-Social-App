@@ -1,7 +1,6 @@
-import { account, ID, functions } from "./appwrite";
+import { account, ID, functions, OAuthProvider } from "./appwrite";
 
-const host = window.location.host;
-
+const origin = window.location.origin;
 const authService = {
     async checkEmailAvailablity({ email }) {
         const promise = functions.createExecution(
@@ -54,7 +53,7 @@ const authService = {
     },
 
     async sendVerificationLink() {
-        const promise = account.createVerification(`http://${host}/auth/verify-email/`);
+        const promise = account.createVerification(`${origin}/auth/verify-email/`);
 
         return promise
             .then((response) => ({
@@ -83,6 +82,13 @@ const authService = {
                 success: false,
                 data: error,
             }));
+    },
+    googleLogin() {
+        account.createOAuth2Session(
+            OAuthProvider.Google,
+            `${origin}/auth/oauth`,
+            `${origin}/auth/login`,
+        );
     },
 
     async isLoggedIn() {
@@ -118,7 +124,7 @@ const authService = {
     },
 
     async requestResetPassword({ email }) {
-        const promise = account.createRecovery(email, `http://${host}/auth/reset-password/`);
+        const promise = account.createRecovery(email, `${origin}/auth/reset-password/`);
 
         return promise
             .then((response) => ({

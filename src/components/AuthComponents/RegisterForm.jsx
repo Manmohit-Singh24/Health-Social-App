@@ -74,7 +74,7 @@ const RegisterForm = () => {
                 setIsLoading(false);
             }
         } else {
-            // register
+            // register (phase 2)
             const resRegister = await authService.register(formData);
 
             if (resRegister.success) {
@@ -87,7 +87,7 @@ const RegisterForm = () => {
                             description: `Verification link sent to ${formData.email}.`,
                         });
                     }
-                    dispatch(setAuthData(formData));
+                    dispatch(setAuthData({...formData , isLogedIn: true}));
 
                     navigate("/");
                 } else {
@@ -95,6 +95,7 @@ const RegisterForm = () => {
                     setIsLoading(false);
                 }
             } else {
+                // handle error (phase 3)
                 if (
                     resRegister.message ===
                     "A user with the same id, email, or phone already exists in this project."
@@ -239,7 +240,7 @@ const RegisterForm = () => {
                     <p className="text-center text-sm text-red-500 mt-4">{backendError}</p>
                 )}
                 {/* Sign up link */}
-                <p className="text-center text-sm text-gray-500 mt-4">
+                <p className="text-center text-sm text-muted-foreground mt-4">
                     Already have an account?{" "}
                     <Link to="/auth/login" className="text-blue-600 hover:underline">
                         Sign in

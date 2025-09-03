@@ -5,6 +5,8 @@ import CheckEmailPage from "./CheckEmailPage";
 import ResetPasswordForm from "./ResetPasswordForm";
 import GoogleLoginButton from "./GoogleLoginButton";
 import VerifyEmailPage from "./VerifyEmailPage";
+import OAuth from "./OAuth";
+
 export {
     LoginForm,
     RegisterForm,
@@ -12,5 +14,6 @@ export {
     CheckEmailPage,
     ResetPasswordForm,
     GoogleLoginButton,
-    VerifyEmailPage
+    VerifyEmailPage,
+    OAuth
 };

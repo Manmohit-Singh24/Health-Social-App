@@ -141,9 +141,9 @@ const LoginForm = () => {
                 {backendError && (
                     <p className="text-center text-sm text-red-500 mt-4">{backendError}</p>
                 )}
-                
+
                 {/* Sign up link */}
-                <p className="text-center text-sm text-gray-500 mt-4">
+                <p className="text-center text-sm text-muted-foreground mt-4">
                     Don't have an account?{" "}
                     <Link to="/auth/register" className="text-blue-600 hover:underline">
                         Sign up
