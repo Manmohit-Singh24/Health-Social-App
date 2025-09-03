@@ -1,3 +1,4 @@
+import { createSession } from "react-router-dom";
 import { account, ID, functions, OAuthProvider } from "./appwrite";
 
 const origin = window.location.origin;
@@ -20,8 +21,8 @@ const authService = {
             }));
     },
 
-    async register({ email, password, username, fullname }) {
-        const promise = account.create(ID.unique(), email, password, username, fullname);
+    async register({ email, password, fullname }) {
+        const promise = account.create(ID.unique(), email, password, fullname);
 
         return promise
             .then((response) => ({
@@ -83,12 +84,37 @@ const authService = {
                 data: error,
             }));
     },
+
+    //Preffered method for OAuth as we can bypass CORS error here for secure browsers like firefox and brave
+    googleTokenLogin() {
+        account.createOAuth2Token(
+            OAuthProvider.Google,
+            `${origin}/auth/oauth`,
+            `${origin}/auth/login`,
+        );
+    },
     googleLogin() {
         account.createOAuth2Session(
             OAuthProvider.Google,
             `${origin}/auth/oauth`,
             `${origin}/auth/login`,
         );
+    },
+
+    async createSession({ userId, secret }) {
+        const promise = account.createSession(userId, secret);
+
+        return promise
+            .then((response) => ({
+                message: "Session created",
+                success: true,
+                data: response,
+            }))
+            .catch((error) => ({
+                message: error.message,
+                success: false,
+                data: error,
+            }));
     },
 
     async isLoggedIn() {

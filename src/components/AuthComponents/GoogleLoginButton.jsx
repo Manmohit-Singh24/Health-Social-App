@@ -4,7 +4,8 @@ import authService from "../../services/authService";
 const GoogleLoginButton = () => {
 
     const handleGoogleSignIn = async() => {
-        authService.googleLogin();
+        // authService.googleLogin(); // Was not working well in secure browsers
+        authService.googleTokenLogin();
     };
 
     return (

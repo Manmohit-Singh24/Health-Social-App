@@ -6,13 +6,14 @@ import { toogleTheme } from "../store/Features/uiSlice";
 import { MdOutlineDarkMode } from "react-icons/md";
 import { MdOutlineWbSunny } from "react-icons/md";
 import { setAuthData } from "../store/Features/authSlice";
-
+import { useState } from "react";
 const HomePage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const isLogedIn = useSelector((state) => state.AuthData.isLogedIn);
     const theme = useSelector((state) => state.UIData.Theme);
 
+    const [showLogin, setShowLogin] = useState(undefined);
     const logout = async () => {
         if (!isLogedIn) {
             navigate("/auth/login");
@@ -27,7 +28,9 @@ const HomePage = () => {
     const checkLogin = async () => {
         const res = await authService.isLoggedIn();
         if (res.success) {
-            console.log(res);
+            setShowLogin(`Hi ${res.data.name} , You are Logged In from ${res.data.email}`);
+        } else {
+            setShowLogin(`Sorry, you are not logged in`);
         }
     };
 
@@ -45,7 +48,9 @@ const HomePage = () => {
             <Button onClick={changeTheme} variant={"secondary"}>
                 {theme === "light" ? <MdOutlineDarkMode /> : <MdOutlineWbSunny />}
             </Button>
-            <Button onClick={checkLogin} > Know if Logged In </Button>
+            <Button onClick={checkLogin}> Know if Logged In </Button>
+
+            {showLogin && <p className="text-foreground">{showLogin}</p>}
         </div>
     );
 };

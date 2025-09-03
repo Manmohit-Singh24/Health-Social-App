@@ -9,20 +9,12 @@ import {
     GoogleLoginButton,
     VerifyEmailPage,
     OAuth,
+    EditProfileForm,
 } from "../components/AuthComponents";
-import { useSelector } from "react-redux";
 
 const AuthPage = () => {
     const { authType } = useParams();
     const navigate = useNavigate();
-
-    const isLoggedIn = useSelector((state) => state.AuthData.isLogedIn);
-
-    useEffect(() => {
-        if (isLoggedIn && authType !== "verify-email") {
-            navigate("/");
-        }
-    }, [isLoggedIn]);
 
     let formComponent = <></>;
     let heading = "Oops! Wrong Route";
@@ -49,7 +41,10 @@ const AuthPage = () => {
         heading = "Verify your email";
     } else if (authType === "oauth") {
         formComponent = <OAuth />;
-        heading = "OAuth";
+        heading = "Please Wait....";
+    } else if (authType === "edit-profile") {
+        formComponent = <EditProfileForm />;
+        heading = "Edit Profile";
     } else {
         isValidAuthType = false;
     }

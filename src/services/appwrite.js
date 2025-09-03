@@ -1,23 +1,21 @@
-import { Client, Account, Databases, Storage, Functions } from "appwrite";
+import { Client, Account, TablesDB, Storage, Functions } from "appwrite";
 
-export const conf = {
+export const config = {
     appwriteURL: String(import.meta.env.VITE_APPWRITE_ENDPOINT),
     projectID: String(import.meta.env.VITE_APPWRITE_PROJECT_ID),
     databaseID: String(import.meta.env.VITE_APPWRITE_DATABASE_ID),
-    collectionID: String(import.meta.env.VITE_APPWRITE_COLLECTION_ID),
+    databaseID: String(import.meta.env.VITE_APPWRITE_DATABASE_ID),
     bucketID: String(import.meta.env.VITE_APPWRITE_BUCKET_ID),
 };
 
-export { ID } from "appwrite";
-
-export { OAuthProvider } from "appwrite";
+export { ID, OAuthProvider , Query } from "appwrite";
 
 export const client = new Client();
-client.setEndpoint(conf.appwriteURL).setProject(conf.projectID);
+client.setEndpoint(config.appwriteURL).setProject(config.projectID);
 
 export const account = new Account(client);
 
-export const databases = new Databases(client);
+export const databases = new TablesDB(client);
 
 export const bucket = new Storage(client);
 

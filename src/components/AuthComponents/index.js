@@ -6,6 +6,7 @@ import ResetPasswordForm from "./ResetPasswordForm";
 import GoogleLoginButton from "./GoogleLoginButton";
 import VerifyEmailPage from "./VerifyEmailPage";
 import OAuth from "./OAuth";
+import EditProfileForm from "./EditProfileFrom";
 
 export {
     LoginForm,
@@ -15,5 +16,6 @@ export {
     ResetPasswordForm,
     GoogleLoginButton,
     VerifyEmailPage,
-    OAuth
+    OAuth,
+    EditProfileForm,
 };

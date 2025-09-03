@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import z from "zod";
+import z, { set } from "zod";
 import { useForm } from "react-hook-form";
 import {
     Form,
@@ -16,16 +16,21 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import authService from "../../services/authService";
 import { VscLoading } from "react-icons/vsc";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setAuthData } from "../../store/Features/authSlice";
 import { toast } from "sonner";
+import dbService from "../../services/dbService";
 
 const emailCheckeSchema = z.object({
     email: z.string().email("Invalid email"),
 });
 
 const registerSchema = emailCheckeSchema.extend({
-    username: z.string().min(2, { message: "Username must be at least 2 characters." }),
+    username: z
+        .string()
+        .min(3, "Username must be at least 3 characters")
+        .max(20, "Username must be at most 20 characters")
+        .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores allowed"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     fullname: z.string().min(2, { message: "Name must be at least 2 characters." }),
 });
@@ -54,10 +59,12 @@ const RegisterForm = () => {
     });
     const [isLoading, setIsLoading] = useState(false);
     const [backendError, setBackendError] = useState("");
+    const [checkingUsername, setCheckingUsername] = useState(false);
 
     const onSubmit = async (formData) => {
-        setIsLoading(true);
+        if (checkingUsername) return;
 
+        setIsLoading(true);
         if (formPhase === 1) {
             // check for availability.
             const resCheckEmail = await authService.checkEmailAvailablity(formData);
@@ -80,18 +87,37 @@ const RegisterForm = () => {
             if (resRegister.success) {
                 const resLogin = await authService.login(formData);
                 if (resLogin.success) {
+                    const { email, name, $id : userId } = resLogin.data;
+
                     const resVerifyEmail = await authService.sendVerificationLink();
+                    const resUsername = await dbService.addProfileData({
+                        userId,
+                        username: formData.username,
+                    });
 
                     if (resVerifyEmail.success) {
                         toast.message("Plase Verify your email", {
                             description: `Verification link sent to ${formData.email}.`,
                         });
                     }
-                    dispatch(setAuthData({...formData , isLogedIn: true}));
 
-                    navigate("/");
+                    if (resUsername.success) {
+                        dispatch(
+                            setAuthData({
+                                email,
+                                userId,
+                                name,
+                                isLogedIn: true,
+                            }),
+                        );
+
+                        navigate("/");
+                    } else {
+                        setBackendError(resUsername.message);
+                        setIsLoading(false);
+                    }
                 } else {
-                    setBackendError(resLogin.message);
+                    setBackendError(resUsername.message);
                     setIsLoading(false);
                 }
             } else {
@@ -107,6 +133,38 @@ const RegisterForm = () => {
             }
         }
     };
+
+    // check for username availability
+    const enteredUsername = form.watch("username");
+
+    useEffect(() => {
+        if (!enteredUsername) {
+            setCheckingUsername(false);
+            return;
+        }
+        setCheckingUsername(true);
+
+        const callback = setTimeout(async () => {
+            const res = await dbService.checkUsernameAvailability({ username: enteredUsername });
+
+            if (res.success) {
+                if (res.data.total > 0)
+                    form.setError("username", { message: "Username already exists" });
+                else form.clearErrors("username");
+
+                setCheckingUsername(false);
+            } else {
+                setBackendError(res.message);
+                setCheckingUsername(false);
+            }
+        }, 500); // wait for 0.5 seconds after typing
+
+        return () => clearTimeout(callback);
+        /*Every time username changes:
+         * React runs cleanup from the previous effect → clearTimeout(delay) removes the last pending timer. ✅
+         * A new 500ms timer is scheduled.
+         */
+    }, [enteredUsername]);
 
     useEffect(() => {
         if (formPhase === 2 && Object.keys(form.formState.errors).length > 0) {
@@ -152,12 +210,18 @@ const RegisterForm = () => {
                                 <FormItem className="grid-rows-[1.2rem_2.2rem_1.2rem] mb-1 w-full items-start gap-1">
                                     <FormLabel className="text-foreground">Username</FormLabel>
                                     <FormControl>
-                                        <Input
-                                            type="text"
-                                            className="text-foreground"
-                                            placeholder="you_123"
-                                            {...field}
-                                        />
+                                        <div className="relative w-full">
+                                            <Input
+                                                type="text"
+                                                className="text-foreground"
+                                                placeholder="you_123"
+                                                {...field}
+                                            />
+
+                                            {checkingUsername && (
+                                                <VscLoading className="animate-spin size-2.5 absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0" />
+                                            )}
+                                        </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -221,7 +285,7 @@ const RegisterForm = () => {
 
                 <Button
                     type="submit"
-                    variant={isLoading ? "disabled" : "default"}
+                    variant={isLoading || checkingUsername ? "disabled" : "default"}
                     className="w-full mt-2 bg-accent-foreground text-accent"
                 >
                     {isLoading ? (
